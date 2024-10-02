@@ -31,10 +31,15 @@ def send_email(message):
     password = "wieu tuab eelc uubr"
     receiver = "frederickkankam7@gmail.com"
     context = ssl.create_default_context()
+    message_format = f"""\
+Subject: New Tour Alert
+From: {username}
+{message}
+"""
 
     with smtplib.SMTP_SSL(host,port, context=context) as server:
         server.login(username, password)
-        server.sendmail(username, receiver, message.encode('utf-8'))
+        server.sendmail(username, receiver, message_format.encode('utf-8'))
 
 # Store the information in the database
 def store(tour):
