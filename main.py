@@ -2,8 +2,14 @@ import requests
 import selectorlib
 import ssl
 import smtplib
+import time
+import sqlite3
+
+from example import cursor
 
 URL = "https://programmer100.pythonanywhere.com/tours/"
+
+connection = sqlite3.connect("data.db")
 
 
 def scrape(url):
@@ -28,27 +34,36 @@ def send_email(message):
     with smtplib.SMTP_SSL(host,port, context=context) as server:
         server.login(username, password)
         server.sendmail(username, receiver, message.encode('utf-8'))
-    print("Email was sent")
 
 
 def store(tour):
-    with open("Tours.txt", "a") as file:
-        file.write(tour + '\n')
+    tour = tour.split(",")
+    tour = [tour.strip() for tour in tour]
+    cursor = connection.cursor()
+    cursor.execute("INSERT INTO events VALUES (?, ?, ?)", tour)
+    connection.commit()
 
 
-def read():
-    with open("Tours.txt", "r") as file:
-        return file.read()
+def read(extracted):
+    tour = extracted.split(",")
+    tour = [tour.strip() for tour in tour]
+    band, city, date = tour
+    cursor = connection.cursor()
+    cursor.execute("SELECT * FROM events WHERE band = ? AND city = ? AND date = ?", (band, city, date))
+    row = cursor.fetchall()
+    return row
 
 
 
 
 if __name__ == "__main__":
-    scraped = scrape(URL)
-    extracted = extractor(scraped)
-    Tours = read()
-    print(extracted)
-    if extracted != "No upcoming tours":
-        if extracted not in Tours:
-            store(extracted)
-            send_email(extracted)
+    while True:
+        scraped = scrape(URL)
+        extracted = extractor(scraped)
+        print(extracted)
+        if extracted != "No upcoming tours":
+            Tours = read(extracted)
+            if not Tours:
+                store(extracted)
+                send_email(extracted)
+        time.sleep(2)
