@@ -5,24 +5,25 @@ import smtplib
 import time
 import sqlite3
 
-from example import cursor
 
 URL = "https://programmer100.pythonanywhere.com/tours/"
 
+# Set a connection to the database
 connection = sqlite3.connect("data.db")
 
-
+# Get the source code form the website URL
 def scrape(url):
     response = requests.get(url)
     source = response.text
     return source
 
-
+# Extract the information from the source code
 def extractor(source):
     selector = selectorlib.Extractor.from_yaml_file("extract.yaml")
     value = selector.extract(source)["tours"]
     return value
 
+# Email the user
 def send_email(message):
     host = "smtp.gmail.com"
     port = 465
@@ -35,7 +36,7 @@ def send_email(message):
         server.login(username, password)
         server.sendmail(username, receiver, message.encode('utf-8'))
 
-
+# Store the information in the database
 def store(tour):
     tour = tour.split(",")
     tour = [tour.strip() for tour in tour]
@@ -43,9 +44,9 @@ def store(tour):
     cursor.execute("INSERT INTO events VALUES (?, ?, ?)", tour)
     connection.commit()
 
-
-def read(extracted):
-    tour = extracted.split(",")
+# Read the information from the database
+def read(extract):
+    tour = extract.split(",")
     tour = [tour.strip() for tour in tour]
     band, city, date = tour
     cursor = connection.cursor()
@@ -55,7 +56,7 @@ def read(extracted):
 
 
 
-
+# A program to scrape a website for information on upcoming tours and send it to the user
 if __name__ == "__main__":
     while True:
         scraped = scrape(URL)
