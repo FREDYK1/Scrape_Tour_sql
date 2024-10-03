@@ -10,7 +10,7 @@ URL = "https://programmer100.pythonanywhere.com/tours/"
 
 
 
-# Create a Event Class to extract the event form source code
+# Create an Event Class to extract the event form source code
 class Event:
     def scrape(self, url):
         response = requests.get(url)
@@ -44,7 +44,7 @@ class Email:
             server.sendmail(username, receiver, message_format.encode('utf-8'))
 
 
-# Store the information in the database
+# Class to store the information in the database
 class Database:
     def __init__(self, database_path):
         self.connection = sqlite3.connect(database_path)
